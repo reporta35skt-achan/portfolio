@@ -20,6 +20,8 @@ if (worksStage) {
   let startScrollLeft = 0; 
   /* ------------------------- マウスドラッグ ------------------------- */ 
   worksStage.addEventListener('pointerdown', (e) => { 
+    if (e.target.closest('a, button, input, textarea, select')) return;
+if (e.pointerType === 'mouse' && e.button !== 0) return;
     /* 左クリック・タッチ以外は無視 */ 
     if (e.pointerType === 'mouse' && e.button !== 0) return; 
     isDragging = true; 
@@ -96,10 +98,34 @@ mobileNav.querySelectorAll('a').forEach(link => link.addEventListener('click', (
   document.body.style.overflow = '';
 }));
 
-document.querySelectorAll('a[href^="#"]').forEach(link => {
+document.querySelectorAll('a[href^="#"]').forEach((link) => {
   link.addEventListener('click', (e) => {
-    const target = document.querySelector(link.getAttribute('href'));
-    if (target) { e.preventDefault(); target.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' }); }
+    const href = link.getAttribute('href');
+
+    // href="#" は移動先がないため何もしない
+    if (!href || href === '#') {
+      e.preventDefault();
+      return;
+    }
+
+    let target;
+
+    try {
+      target = document.querySelector(href);
+    } catch (error) {
+      // 不正なセレクタなら通常の動作に任せる
+      return;
+    }
+
+    // 移動先がない場合は通常のリンク動作を妨げない
+    if (!target) return;
+
+    e.preventDefault();
+
+    target.scrollIntoView({
+      behavior: reduceMotion ? 'auto' : 'smooth',
+      block: 'start'
+    });
   });
 });
 
